@@ -8,6 +8,10 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
+#include <cmath>
+#include <unordered_set>
+
 
 
 // function declarations for compiler
@@ -61,7 +65,7 @@ int main()
         {
             //Ping Demo
         case 1:
-        {
+        {   system("cls");
             bool option1Running = true;
             while (option1Running)
             {
@@ -95,11 +99,11 @@ int main()
         //Directory Demo
         //IMPORT NOTE: due to using filesystem, this will only work on C++17 or higher
         case 2:
-        {
+        {   system("cls");
             bool option2Running = true;
             while (option2Running)
             {
-                std::cout << "You selected option 2. Please enter a directory path or type 'back' to return to the main menu:" << std::endl;
+                std::cout << "You selected option 2. Please enter a directory path\nor type 'back' to return to the main menu:" << std::endl;
                 std::getline(std::cin, userInput);
                 if (userInput == "back")
                 {
@@ -205,7 +209,7 @@ int main()
         }
         //TODO: Add text file explorer
         case 3:
-        {
+        {   system("cls");
             bool option3Running = true;
             while (option3Running)
             {
@@ -244,7 +248,7 @@ int main()
         }
         //TODO: add one more feature or remove?
         case 4:
-        {
+        {   system("cls");
             bool option1Running = true;
             while (option1Running)
             {
@@ -258,6 +262,7 @@ int main()
             break;
         }
         case 5:
+            system("cls");
             std::cout << "Exiting the application..." << std::endl;
             running = false;
             break;
@@ -333,29 +338,29 @@ void displayTxtFiles(const std::vector<std::string>& txtFiles) {
 
 void interactWithSelectedFile(const std::string& selectedFile) {
     std::string userInput;
-    do {
-        std::ifstream file(selectedFile);
-        std::string word;
-        int wordCount = 0;
-        int lineCount = 0;
-        int charCount = 0;
-        std::string line;
+    std::ifstream file(selectedFile);
+    std::string word;
+    int wordCount = 0;
+    int lineCount = 0;
+    int charCount = 0;
+    std::string line;
 
-        while (std::getline(file, line))
+    while (std::getline(file, line))
+    {
+        lineCount++;
+        charCount += line.length(); // count characters in each line
+        std::istringstream iss(line);
+        while (iss >> word)
         {
-            lineCount++;
-            charCount += line.length(); // count characters in each line
-            std::istringstream iss(line);
-            while (iss >> word)
-            {
-                wordCount++;
-            }
+            wordCount++;
         }
+    }
 
-        std::cout << "Word count: " << wordCount << std::endl;
-        std::cout << "Line count: " << lineCount << std::endl;
-        std::cout << "Character count: " << charCount << "\n" << std::endl;
+    std::cout << "Word count: " << wordCount << std::endl;
+    std::cout << "Line count: " << lineCount << std::endl;
+    std::cout << "Character count: " << charCount << "\n" << std::endl;
 
+    do {
         // TODO: Implement features to interact with the selected file
         std::cout << "Please select an option for what you want to do with this file : \n" << std::endl;
         std::cout << "1) Search for a word within the text file" << std::endl;
@@ -363,8 +368,11 @@ void interactWithSelectedFile(const std::string& selectedFile) {
         std::cout << "3) Read File in reverse" << std::endl;
         std::cout << "4) Give Freqency of each word" << std::endl;
         std::cout << "5) List longest and shortest word" << std::endl;
-        std::cout << "6) List Average word lenght\n" << std::endl;
-        std::cout << "7) Enter 'back' to go back to the file selection." << std::endl;
+        std::cout << "6) List Average word lenght" << std::endl;
+        std::cout << "7) List total Number of unique words" << std::endl;
+        std::cout << "8) List most and least frequent starting letter" << std::endl;
+        std::cout << "9) List most and least frequent ending letter\n" << std::endl;
+        std::cout << " Enter 'back' to go back to the file selection." << std::endl;
         std::getline(std::cin, userInput);
 
         int selection;
@@ -379,7 +387,9 @@ void interactWithSelectedFile(const std::string& selectedFile) {
         switch (selection)
         {
         case 1:
-        {
+        {   
+            system("cls");
+
             std::cout << "\nEnter the term you want to search for: ";
             std::string searchTerm;
             std::getline(std::cin, searchTerm);
@@ -411,20 +421,262 @@ void interactWithSelectedFile(const std::string& selectedFile) {
             break;
         }
         case 2:
-            // Handle "Replace all word within the text file"
+        {
+            system("cls");
+            std::cout << "\nPlease note that you have selected the Replace function, due to this changing data\n";
+            std::cout << "In order to adhere to best data practises a new file will be created with the _modified suffix\n";
+            std::cout << "Please keep in mind that you will need to select the modified text file if you wish to continue working within it.\n" << std::endl;
+            std::cout << "\nEnter the term you want to replace: ";
+            std::string termToReplace;
+            std::getline(std::cin, termToReplace);
+
+            std::cout << "Enter the term you want to replace it with: ";
+            std::string replacementTerm;
+            std::getline(std::cin, replacementTerm);
+
+            std::ifstream file(selectedFile);
+            std::string line;
+            int count = 0;
+
+            // Create a new file with _modified appended to the name
+            std::string modifiedFileName = selectedFile.substr(0, selectedFile.find_last_of(".")) + "_modified.txt";
+            // Check if the file already exists
+            if (std::filesystem::exists(modifiedFileName)) {
+                std::cout << "\nA modified file with this name already exists. That file will now be overwritten.\n" << std::endl;
+            }
+            std::ofstream modifiedFile(modifiedFileName);
+
+            while (std::getline(file, line))
+            {
+                size_t foundPos = line.find(termToReplace);
+                while (foundPos != std::string::npos)
+                {
+                    line.replace(foundPos, termToReplace.length(), replacementTerm);
+                    foundPos = line.find(termToReplace, foundPos + replacementTerm.length()); // search for next occurrence
+                    count++;
+                }
+                modifiedFile << line << "\n";
+            }
+
+            file.close();
+            modifiedFile.close();
+
+            if (count == 0) {
+                std::cout << "\nThe term was not found. No modifications were made.\n" << std::endl;
+                // Delete the unmodified file
+                std::filesystem::remove(modifiedFileName);
+            }
+            else {
+                std::cout << "\nThe term was found " << count << " times and replaced.\n" << std::endl;
+                std::cout << "The modified file has been saved as: " << modifiedFileName << std::endl;
+                std::cout << "\n" << modifiedFileName << " will now be opened. \n" << std::endl;
+                // Open the file
+                std::string command = "start " + modifiedFileName;
+                system(command.c_str());
+                break;
+            }
             break;
+        }
         case 3:
-            // Handle "Read File in reverse"
+        {   
+            system("cls");
+            std::ifstream file(selectedFile);
+            std::vector<std::string> lines;
+            std::string line;
+
+            while (std::getline(file, line))
+            {
+                lines.push_back(line);
+            }
+
+            std::string reversedFileName = selectedFile.substr(0, selectedFile.find_last_of(".")) + "_reversed.txt";
+            // Check if the file already exists
+            if (std::filesystem::exists(reversedFileName)) {
+                std::cout << "\nA reversed file with this name already exists. That file will now be overwritten.\n" << std::endl;
+            }
+            std::ofstream reversedFile(reversedFileName);
+
+            for (auto it = lines.rbegin(); it != lines.rend(); ++it)
+            {
+                reversedFile << *it << "\n";
+            }
+
+            file.close();
+            reversedFile.close();
+
+            std::cout << "\nThe reversed file has been saved as: " << reversedFileName << std::endl;
+            std::cout << "\n"<< reversedFileName <<" will now be opened. \n" << std::endl;
+            // Open the file
+            std::string command = "start " + reversedFileName;
+            system(command.c_str());
             break;
+        }
         case 4:
-            // Handle "Give Frequency of each word"
+        {
+            system("cls");
+            std::ifstream file(selectedFile);
+            std::unordered_map<std::string, int> wordFrequency;
+            std::string word;
+
+            while (file >> word)
+            {
+                // Remove punctuation marks from the word due to a counting error I encoutered I added the below 
+                word.erase(std::remove_if(word.begin(), word.end(), ::ispunct), word.end());
+                wordFrequency[word]++;
+            }
+
+            std::pair<std::string, int> mostFrequentWord = *std::max_element(wordFrequency.begin(), wordFrequency.end(),
+                [](const auto& a, const auto& b) {
+                return a.second < b.second;
+            });
+
+            std::cout << "Most occurring word: " << mostFrequentWord.first << " ,appeared " << mostFrequentWord.second << " times.\n";
+
             break;
+        }
         case 5:
-            // Handle "List longest and shortest word"
+        {
+            system("cls");
+            std::ifstream file(selectedFile);
+            std::string word;
+            std::string longestWord;
+            std::string shortestWord;
+
+            if (file >> word) {
+                // Remove punctuation from the first word
+                word.erase(std::remove_if(word.begin(), word.end(), ::ispunct), word.end());
+                longestWord = word;
+                shortestWord = word;
+            }
+
+            while (file >> word)
+            {
+                std::string cleanWord = word;
+                // Remove punctuation from the word
+                cleanWord.erase(std::remove_if(cleanWord.begin(), cleanWord.end(), ::ispunct), cleanWord.end());
+                
+                if (cleanWord.length() > longestWord.length()) {
+                    longestWord = cleanWord;
+                }
+                if (cleanWord.length() < shortestWord.length()) {
+                    shortestWord = cleanWord;
+                }
+            }
+
+            std::cout << "Longest word: " << longestWord << " ,length: " << longestWord.length() << "\n";
+            std::cout << "Shortest word: " << shortestWord << " ,length: " << shortestWord.length() << "\n";
+
             break;
+        }
         case 6:
-            // Handle "List Average word length"
+        {
+            system("cls");
+            std::ifstream file(selectedFile);
+            std::string word;
+            int totalLength = 0;
+            int wordCount = 0;
+
+            while (file >> word)
+            {
+                totalLength += word.length();
+                wordCount++;
+            }
+
+            double averageLength = static_cast<double>(totalLength) / wordCount;
+            int roundedDown = std::floor(averageLength);
+            int roundedUp = std::ceil(averageLength);
+
+            std::cout << "Average word length: " << averageLength << " Characters long\n";
+            std::cout << "Rounded down: " << roundedDown << " Characters long\n";
+            std::cout << "Rounded up: " << roundedUp << " Characters long\n";
+
             break;
+        }
+        case 7:
+        {
+            std::ifstream file(selectedFile);
+            std::unordered_set<std::string> uniqueWords;
+            std::string word;
+
+            while (file >> word)
+            {
+                // Remove punctuation from the word
+                word.erase(std::remove_if(word.begin(), word.end(), ::ispunct), word.end());
+
+                uniqueWords.insert(word);
+            }
+
+            std::cout << "Number of unique words: " << uniqueWords.size() << "\n";
+
+            break;
+        }
+        case 8:
+        {
+            std::ifstream file(selectedFile);
+            std::unordered_map<char, int> letterFrequency;
+            std::string word;
+
+            while (file >> word)
+            {
+                // Remove punctuation from the word
+                word.erase(std::remove_if(word.begin(), word.end(), ::ispunct), word.end());
+
+                if (!word.empty()) {
+                    char firstLetter = std::tolower(word[0]);
+                    letterFrequency[firstLetter]++;
+                }
+            }
+
+            auto mostFrequentLetter = *std::max_element(letterFrequency.begin(), letterFrequency.end(),
+                [](const auto& a, const auto& b) {
+                return a.second < b.second;
+            });
+
+            auto leastFrequentLetter = *std::min_element(letterFrequency.begin(), letterFrequency.end(),
+                [](const auto& a, const auto& b) {
+                return a.second < b.second;
+            });
+
+            std::cout << "Most frequent starting letter: " << mostFrequentLetter.first << " ,appeared " << mostFrequentLetter.second << " times.\n";
+            std::cout << "Least frequent starting letter: " << leastFrequentLetter.first << " ,appeared " << leastFrequentLetter.second << " times.\n";
+
+            break;
+        }
+        case 9:
+        {
+            std::ifstream file(selectedFile);
+            std::unordered_map<char, int> letterFrequency;
+            std::string word;
+
+            while (file >> word)
+            {
+                // Remove punctuation from the word
+                word.erase(std::remove_if(word.begin(), word.end(), ::ispunct), word.end());
+
+                if (!word.empty()) {
+                    char lastLetter = std::tolower(word.back());
+                    letterFrequency[lastLetter]++;
+                }
+            }
+
+            auto mostFrequentLetter = *std::max_element(letterFrequency.begin(), letterFrequency.end(),
+                [](const auto& a, const auto& b) {
+                return a.second < b.second;
+            });
+
+            auto leastFrequentLetter = *std::min_element(letterFrequency.begin(), letterFrequency.end(),
+                [](const auto& a, const auto& b) {
+                return a.second < b.second;
+            });
+
+            std::cout << "Most frequent ending letter: " << mostFrequentLetter.first << ", appeared " << mostFrequentLetter.second << " times.\n";
+            std::cout << "Least frequent ending letter: " << leastFrequentLetter.first << ", appeared " << leastFrequentLetter.second << " times.\n";
+
+            break;
+        }
+
+
+
         default:
             std::cout << "Invalid selection. Please enter a number from the list." << std::endl;
             break;
