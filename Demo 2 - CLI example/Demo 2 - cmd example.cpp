@@ -6,10 +6,16 @@
 #include <regex>
 #include <filesystem>
 #include <map>
+#include <fstream>
+#include <sstream>
+
 
 // function declarations for compiler
 bool isValidIpAddress(const std::string& ipAddress);
 bool isValidUrl(const std::string& url);
+std::vector<std::string> findTxtFilesInDirectory(const std::string& path);
+void displayTxtFiles(const std::vector<std::string>& txtFiles);
+void interactWithSelectedFile(const std::string& selectedFile);
 
 int main()
 {
@@ -200,16 +206,39 @@ int main()
         //TODO: Add text file explorer
         case 3:
         {
-            bool option1Running = true;
-            while (option1Running)
+            bool option3Running = true;
+            while (option3Running)
             {
-                std::cout << "You are in option 3. Enter 'back' to go back to the main menu. -- Function not complete yet" << std::endl;
+                std::cout << "You are in option 3. Enter 'back' to go back to the main menu." << std::endl;
+                std::string path = "./"; // path to your project directory
+                std::vector<std::string> txtFiles = findTxtFilesInDirectory(path);
+
+                if (txtFiles.empty()) {
+                    std::cout << "No text files were found in the project directory: " << std::filesystem::absolute(path) << std::endl;
+                }
+                else {
+                    displayTxtFiles(txtFiles);
+                }
+
+                std::string userInput;
                 std::getline(std::cin, userInput);
                 if (userInput == "back")
                 {
-                    option1Running = false;
+                    option3Running = false;
                 }
+                else
+                {
+                    int fileNumber = std::stoi(userInput);
+                    if (fileNumber > 0 && fileNumber <= txtFiles.size()) {
+                        std::string selectedFile = txtFiles[fileNumber - 1];
+                        std::cout << "You selected: " << selectedFile  << "\n" << std::endl;
 
+                        interactWithSelectedFile(selectedFile);
+                    }
+                    else {
+                        std::cout << "Invalid selection. Please enter a number from the list." << std::endl;
+                    }
+                }
             }
             break;
         }
@@ -281,3 +310,125 @@ bool isValidUrl(const std::string& url)
     std::regex urlPattern("^www\\..+\\..+$");
     return std::regex_match(url, urlPattern);
 }
+
+
+// Simple function to Text Explorer
+std::vector<std::string> findTxtFilesInDirectory(const std::string& path) {
+    std::vector<std::string> txtFiles;
+    for (const auto& entry : std::filesystem::directory_iterator(path)) {
+        if (entry.path().extension() == ".txt") {
+            txtFiles.push_back(entry.path().filename().string());
+        }
+    }
+    return txtFiles;
+}
+
+void displayTxtFiles(const std::vector<std::string>& txtFiles) {
+    std::cout << "Found the following text files:" << std::endl;
+    for (int i = 0; i < txtFiles.size(); i++) {
+        std::cout << i + 1 << ") " << txtFiles[i] << std::endl;
+    }
+    std::cout << "Please confirm with which file you wish to interact by entering its number:" << std::endl;
+}
+
+void interactWithSelectedFile(const std::string& selectedFile) {
+    std::string userInput;
+    do {
+        std::ifstream file(selectedFile);
+        std::string word;
+        int wordCount = 0;
+        int lineCount = 0;
+        int charCount = 0;
+        std::string line;
+
+        while (std::getline(file, line))
+        {
+            lineCount++;
+            charCount += line.length(); // count characters in each line
+            std::istringstream iss(line);
+            while (iss >> word)
+            {
+                wordCount++;
+            }
+        }
+
+        std::cout << "Word count: " << wordCount << std::endl;
+        std::cout << "Line count: " << lineCount << std::endl;
+        std::cout << "Character count: " << charCount << "\n" << std::endl;
+
+        // TODO: Implement features to interact with the selected file
+        std::cout << "Please select an option for what you want to do with this file : \n" << std::endl;
+        std::cout << "1) Search for a word within the text file" << std::endl;
+        std::cout << "2) Replace all word within the text file" << std::endl;
+        std::cout << "3) Read File in reverse" << std::endl;
+        std::cout << "4) Give Freqency of each word" << std::endl;
+        std::cout << "5) List longest and shortest word" << std::endl;
+        std::cout << "6) List Average word lenght\n" << std::endl;
+        std::cout << "7) Enter 'back' to go back to the file selection." << std::endl;
+        std::getline(std::cin, userInput);
+
+        int selection;
+        try {
+            selection = std::stoi(userInput);
+        }
+        catch (std::invalid_argument&) {
+            std::cout << "Invalid input: " << userInput << std::endl;
+            continue;
+        }
+
+        switch (selection)
+        {
+        case 1:
+        {
+            std::cout << "\nEnter the term you want to search for: ";
+            std::string searchTerm;
+            std::getline(std::cin, searchTerm);
+
+            std::ifstream file(selectedFile);
+            std::string line;
+            int position = 0;
+            int count = 0;
+
+            while (std::getline(file, line))
+            {
+                size_t foundPos = line.find(searchTerm);
+                while (foundPos != std::string::npos)
+                {
+                    std::cout << "Term found at character position: " << position + foundPos << std::endl;
+                    std::cout << "Term ends at character position: " << position + foundPos + searchTerm.length() - 1 << std::endl;
+                    count++;
+                    foundPos = line.find(searchTerm, foundPos + 1); // search for next occurrence
+                }
+                position += line.length() + 1; // +1 for the newline character that std::getline skips
+            }
+
+            if (count == 0) {
+                std::cout << "\nThe term was not found.\n" << std::endl;
+            }
+            else {
+                std::cout << "\nThe term was found " << count << " times.\n" << std::endl;
+            }
+            break;
+        }
+        case 2:
+            // Handle "Replace all word within the text file"
+            break;
+        case 3:
+            // Handle "Read File in reverse"
+            break;
+        case 4:
+            // Handle "Give Frequency of each word"
+            break;
+        case 5:
+            // Handle "List longest and shortest word"
+            break;
+        case 6:
+            // Handle "List Average word length"
+            break;
+        default:
+            std::cout << "Invalid selection. Please enter a number from the list." << std::endl;
+            break;
+        }
+    } while (userInput != "back");
+}
+
