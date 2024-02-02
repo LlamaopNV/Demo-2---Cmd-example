@@ -33,8 +33,7 @@ int main()
             "1) Option 1 Ping command\n"
             "2) Option 2 Directory Summary\n"
             "3) Option 3 Text file explorer\n"
-            "4) Option 4 Regex Demo\n"
-            "5) Option 5 (Exit)\n"
+            "4) Option 5 (Exit)\n"
             "Enter 'h' for help" << std::endl;
         std::string userInput;
         std::getline(std::cin, userInput);
@@ -207,7 +206,6 @@ int main()
             }
             break;
         }
-        //TODO: Add text file explorer
         case 3:
         {   system("cls");
             bool option3Running = true;
@@ -246,22 +244,7 @@ int main()
             }
             break;
         }
-        //TODO: add one more feature or remove?
         case 4:
-        {   system("cls");
-            bool option1Running = true;
-            while (option1Running)
-            {
-                std::cout << "You are in option 4. Enter 'back' to go back to the main menu. --Function not complete yet" << std::endl;
-                std::getline(std::cin, userInput);
-                if (userInput == "back")
-                {
-                    option1Running = false;
-                }
-            }
-            break;
-        }
-        case 5:
             system("cls");
             std::cout << "Exiting the application..." << std::endl;
             running = false;
@@ -317,7 +300,7 @@ bool isValidUrl(const std::string& url)
 }
 
 
-// Simple function to Text Explorer
+// Simple function to Check that there are valid Text files within the directory.
 std::vector<std::string> findTxtFilesInDirectory(const std::string& path) {
     std::vector<std::string> txtFiles;
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
@@ -327,7 +310,7 @@ std::vector<std::string> findTxtFilesInDirectory(const std::string& path) {
     }
     return txtFiles;
 }
-
+// Simple function to display the text files found in the directory.
 void displayTxtFiles(const std::vector<std::string>& txtFiles) {
     std::cout << "Found the following text files:" << std::endl;
     for (int i = 0; i < txtFiles.size(); i++) {
@@ -335,7 +318,7 @@ void displayTxtFiles(const std::vector<std::string>& txtFiles) {
     }
     std::cout << "Please confirm with which file you wish to interact by entering its number:" << std::endl;
 }
-
+//Function that allows the code to interact with the selected file. most of the features are within this function.
 void interactWithSelectedFile(const std::string& selectedFile) {
     std::string userInput;
     std::ifstream file(selectedFile);
